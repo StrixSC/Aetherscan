@@ -13,6 +13,8 @@
     "@sveltejs/vite-plugin-svelte": "^1.0.1",
     "@tsconfig/svelte": "^3.0.0",
     "autoprefixer": "^10.4.8",
+    "chai": "^4.3.6",
+    "ethers": "^5.7.0",
     "postcss": "^8.4.16",
     "svelte": "^3.49.0",
     "svelte-check": "^2.8.0",
@@ -21,5 +23,8 @@
     "tslib": "^2.4.0",
     "typescript": "^4.6.4",
     "vite": "^3.0.7"
+  },
+  "dependencies": {
+    "@metamask/providers": "^9.1.0"
   }
 }
