@@ -2,6 +2,12 @@ import { MetaMaskInpageProvider } from "@metamask/providers";
 
 declare global {
     interface Window{
-        ethereum?:MetaMaskInpageProvider | ExternalProvider | JsonRpcFetchFunc
+        ethereum: ExternalProvider
     }
 }
+
+type ExtensionForProvider = {
+    on: (event: string, callback: (...params: any) => void) => void;
+}
+
+type EthersProvider = ExternalProvider & ExtensionForProvider;
