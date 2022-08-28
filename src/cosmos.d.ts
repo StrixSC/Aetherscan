@@ -1,4 +1,5 @@
 import { MetaMaskInpageProvider } from "@metamask/providers";
+import ethers from "ethers";
 
 declare global {
     interface Window{

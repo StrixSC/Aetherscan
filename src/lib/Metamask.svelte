@@ -56,6 +56,15 @@ import type { EthersProvider } from "src/cosmos";
         }
     };
 
+    const queryBlocks = async () => {
+        try {
+            const blockNumber = await $web3.getBlockNumber();
+            console.log(blockNumber);
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
     ($web3.provider as EthersProvider) 
         .on("accountsChanged", handleAccountEvent)
         .on("chainChanged", handleChainEvent)
@@ -63,6 +72,7 @@ import type { EthersProvider } from "src/cosmos";
 
     $web3.listAccounts()
         .then(handleAccountEvent)
+        .then(queryBlocks)
         .catch((e) => {
             console.error(e);
         });
