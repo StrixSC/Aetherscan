@@ -58,8 +58,16 @@ import type { EthersProvider } from "src/cosmos";
 
     const queryBlocks = async () => {
         try {
+            const blocks = [];
             const blockNumber = await $web3.getBlockNumber();
-            console.log(blockNumber);
+
+            for(let i = 0; i < blockNumber; i++) 
+            {
+                const b = await $web3.getBlockWithTransactions(i);
+                blocks.push(b);
+            }
+            
+            console.log(blocks);
         } catch (e) {
             console.error(e);
         }
