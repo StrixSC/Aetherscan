@@ -3,6 +3,8 @@ import { ethers, BigNumber } from "ethers";
 import { expect } from "chai";
 
 describe('Transactions', () => {
+    const DEFAULT_TIMEOUT = 1000000;
+    
     // Mock private key generated with the default seed when running "npm run ganache"
     // Using the following mnemonic:
     // wide slot strike will police already upset increase uncle peasant scheme buffalo
@@ -17,7 +19,8 @@ describe('Transactions', () => {
         }
     })
     
-    it('Should generate mock transactions', async () => {
+    /* Skip this test unless we're using it to generate some transactions */
+    xit('Should generate mock transactions', async () => {
         const TRANSACTION_COUNT = 50;
         const sender = signer.address;
         const receiver = "0x1bA33293E4863e4aba9359FD2E917cf8Aa735EdA"
@@ -36,5 +39,5 @@ describe('Transactions', () => {
 
         const transactionCount = await web3.getTransactionCount(sender);
         expect(transactionCount).to.equal(TRANSACTION_COUNT);
-    }).timeout(100000)
+    }).timeout(DEFAULT_TIMEOUT)
 });
