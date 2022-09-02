@@ -1,10 +1,9 @@
-import Ganache, { provider } from "ganache";
 import { ethers, BigNumber } from "ethers";
 import { expect } from "chai";
 
 describe('Transactions', () => {
     const DEFAULT_TIMEOUT = 1000000;
-    
+
     // Mock private key generated with the default seed when running "npm run ganache"
     // Using the following mnemonic:
     // wide slot strike will police already upset increase uncle peasant scheme buffalo

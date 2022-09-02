@@ -1,6 +1,9 @@
 <script lang="ts">
     import { ethers } from "ethers";
-import type { EthersProvider } from "src/cosmos";
+    import router from "page";
+    import type { EthersProvider } from "src/cosmos";
+    import Explorer from "./Explorer.svelte";
+
     import {
         activeAccount,
         activeChain,
@@ -10,13 +13,7 @@ import type { EthersProvider } from "src/cosmos";
 
     web3.set(new ethers.providers.Web3Provider(window.ethereum, "any"));
 
-    console.log($web3.provider);
     const signer = $web3.getSigner();
-
-
-    activeAccount.subscribe((c) => {
-        console.log(c);
-    });
 
     export const handleAccountEvent = async (accounts: string[]) => {
         console.log("Handling account event");
@@ -27,7 +24,7 @@ import type { EthersProvider } from "src/cosmos";
             return;
         }
 
-        if($activeAccount !== accounts[0]) {
+        if ($activeAccount !== accounts[0]) {
             activeAccount.set(accounts[0]);
         }
 
@@ -46,7 +43,7 @@ import type { EthersProvider } from "src/cosmos";
         try {
             await $web3.send("eth_requestAccounts", []);
             const accounts = await $web3.listAccounts();
-            return handleAccountEvent(accounts)
+            return handleAccountEvent(accounts);
         } catch (e) {
             if (e.code === 4001) {
                 console.log("Metamask is not connected...");
@@ -56,31 +53,18 @@ import type { EthersProvider } from "src/cosmos";
         }
     };
 
-    const queryBlocks = async () => {
-        try {
-            const blocks = [];
-            const blockNumber = await $web3.getBlockNumber();
+    let blocks = [];
 
-            for(let i = 0; i < blockNumber; i++) 
-            {
-                const b = await $web3.getBlockWithTransactions(i);
-                blocks.push(b);
-            }
-            
-            console.log(blocks);
-        } catch (e) {
-            console.error(e);
-        }
-    }
+    
 
-    ($web3.provider as EthersProvider) 
+    ($web3.provider as EthersProvider)
         .on("accountsChanged", handleAccountEvent)
         .on("chainChanged", handleChainEvent)
         .on("disconnect", handleAccountEvent);
 
-    $web3.listAccounts()
+    $web3
+        .listAccounts()
         .then(handleAccountEvent)
-        .then(queryBlocks)
         .catch((e) => {
             console.error(e);
         });
@@ -88,8 +72,9 @@ import type { EthersProvider } from "src/cosmos";
 
 <main>
     {#if $connectedToMetamask}
-        <p>Connected to {$activeAccount} at the chainId: {$activeChain}</p>
+        <Explorer />
     {:else}
+        <!-- TODO: Handle cases where the Metamask notification is already active and the user clicks on the button again -->
         <button on:click={connect}>Connect</button>
     {/if}
 </main>
