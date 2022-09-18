@@ -3,6 +3,7 @@
     import router from "page";
     import type { EthersProvider } from "src/cosmos";
     import Explorer from "./Explorer.svelte";
+    import { db } from "../db";
 
     import {
         activeAccount,
@@ -29,6 +30,15 @@
         }
 
         const chainId = await signer.getChainId();
+        
+        const dbExists = !!(await db.chains.get(chainId))
+        if (!dbExists) {
+            db.chains.add({
+                id: chainId,
+                blocks: []
+            })
+        }
+
         connectedToMetamask.set(true);
         activeChain.set(chainId);
     };
