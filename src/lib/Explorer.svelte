@@ -8,11 +8,14 @@
     import moment from "moment";
     import page from "page";
     import { BigNumber } from "ethers";
+    import { extractQueryParams } from "./utils";
 
-    if (!$activeChain) 
-    {
-        page.redirect("/");
+    if (!$activeChain) {
+        page.redirect(`/?redirect=${encodeURIComponent(page.current)}`);
     }
+
+    const queryParams: Record<string, any> = extractQueryParams();
+    const queryStartBlock = queryParams.start;
 
     let blocks: BlockWithTransactions[];
 
@@ -40,15 +43,12 @@
             console.error(e);
         }
 
-        console.log(blocks);
-
-        await db.chains.update($activeChain, { id: $activeChain, blocks});
-
+        await db.chains.update($activeChain, { id: $activeChain, blocks });
         return blocks;
     };
 
     const queryBlocksFromBlockchain = async (
-        startingBlock = 0,
+        startingBlock = queryStartBlock || 0,
         maxBlocks = 50
     ): Promise<BlockWithTransactions[]> => {
         try {
@@ -84,122 +84,139 @@
 </script>
 
 <main>
-    {#await queryBlocks()}
-        Loading...
-    {:then blocks}
-        <div class="flex flex-col">
-            <div class="overflow-x-auto sm:-mx-6 lg:-mx-8">
-                <div class="py-2 inline-block min-w-full sm:px-6 lg:px-8">
-                    <div class="overflow-hidden">
-                        <table class="min-w-full">
-                            <thead class="border-b">
-                                <tr>
-                                    <th
-                                        scope="col"
-                                        class="text-sm font-medium text-gray-900 px-6 py-4 text-left"
-                                    >
-                                        Block
-                                    </th>
-                                    <th
-                                        scope="col"
-                                        class="text-sm font-medium text-gray-900 px-6 py-4 text-left"
-                                    >
-                                        Age
-                                    </th>
-                                    <th
-                                        scope="col"
-                                        class="text-sm font-medium text-gray-900 px-6 py-4 text-left"
-                                    >
-                                        Txn
-                                    </th>
-                                    <th
-                                        scope="col"
-                                        class="text-sm font-medium text-gray-900 px-6 py-4 text-left"
-                                    >
-                                        Miner
-                                    </th>
-                                    <th
-                                        scope="col"
-                                        class="text-sm font-medium text-gray-900 px-6 py-4 text-left"
-                                    >
-                                        Gas Used
-                                    </th>
-                                    <th
-                                        scope="col"
-                                        class="text-sm font-medium text-gray-900 px-6 py-4 text-left"
-                                    >
-                                        Gas Limit
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {#each blocks as block}
-                                    <tr class="bg-white border-b">
-                                        <td
-                                            class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900"
+    {#if $activeChain}
+        {#await queryBlocks()}
+            Loading...
+        {:then blocks}
+            <div class="flex flex-col">
+                <div class="overflow-x-auto sm:-mx-6 lg:-mx-8">
+                    <div class="py-2 inline-block min-w-full sm:px-6 lg:px-8">
+                        <div class="overflow-hidden">
+                            <table class="min-w-full">
+                                <thead class="border-b">
+                                    <tr>
+                                        <th
+                                            scope="col"
+                                            class="text-sm font-medium text-gray-900 px-6 py-4 text-left"
                                         >
-                                            {block.number}
-                                        </td>
-                                        <td
-                                            class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap"
+                                            Block
+                                        </th>
+                                        <th
+                                            scope="col"
+                                            class="text-sm font-medium text-gray-900 px-6 py-4 text-left"
                                         >
-                                            {moment
-                                                .unix(block.timestamp)
-                                                .format(
-                                                    "MM/DD/YYYY HH:mm:SS:ss"
-                                                )}
-                                        </td>
-                                        <td
-                                            class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap"
+                                            Age
+                                        </th>
+                                        <th
+                                            scope="col"
+                                            class="text-sm font-medium text-gray-900 px-6 py-4 text-left"
                                         >
-                                            {block.transactions.length}
-                                        </td>
-                                        <td
-                                            class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap"
+                                            Txn
+                                        </th>
+                                        <th
+                                            scope="col"
+                                            class="text-sm font-medium text-gray-900 px-6 py-4 text-left"
                                         >
-                                            {block.miner}
-                                        </td>
-                                        <td
-                                            class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap"
+                                            Miner
+                                        </th>
+                                        <th
+                                            scope="col"
+                                            class="text-sm font-medium text-gray-900 px-6 py-4 text-left"
                                         >
-                                            {BigNumber.from(block.gasUsed)}
-                                        </td>
-                                        <td
-                                            class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap"
+                                            Gas Used
+                                        </th>
+                                        <th
+                                            scope="col"
+                                            class="text-sm font-medium text-gray-900 px-6 py-4 text-left"
                                         >
-                                            {BigNumber.from(block.gasLimit)}
-                                        </td>
+                                            Gas Limit
+                                        </th>
                                     </tr>
-                                {/each}
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                    {#each blocks as block}
+                                        <tr class="bg-white border-b">
+                                            <td
+                                                class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900"
+                                            >
+                                                {block.number}
+                                            </td>
+                                            <td
+                                                class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap"
+                                            >
+                                                {moment
+                                                    .unix(block.timestamp)
+                                                    .format(
+                                                        "MM/DD/YYYY HH:mm:SS:ss"
+                                                    )}
+                                            </td>
+                                            <td
+                                                class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap"
+                                            >
+                                                {block.transactions.length}
+                                            </td>
+                                            <td
+                                                class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap"
+                                            >
+                                                {block.miner}
+                                            </td>
+                                            <td
+                                                class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap"
+                                            >
+                                                {BigNumber.from(block.gasUsed)}
+                                            </td>
+                                            <td
+                                                class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap"
+                                            >
+                                                {BigNumber.from(block.gasLimit)}
+                                            </td>
+                                        </tr>
+                                    {/each}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
+        {/await}
+        <br />
+        <div class="flex justify-center">
+            <nav aria-label="Page navigation example">
+                <ul class="flex list-style-none">
+                    <li class="page-item">
+                        <a
+                            class="page-link relative block py-1.5 px-3 rounded border-0 bg-transparent outline-none transition-all duration-300 rounded text-gray-800 hover:text-gray-800 focus:shadow-none"
+                            href="#">Previous</a
+                        >
+                    </li>
+                    <li class="page-item">
+                        <a
+                            class="page-link relative block py-1.5 px-3 rounded border-0 bg-transparent outline-none transition-all duration-300 rounded text-gray-800 hover:text-gray-800 hover:bg-gray-200 focus:shadow-none"
+                            href="#">1</a
+                        >
+                    </li>
+                    <li class="page-item">
+                        <a
+                            class="page-link relative block py-1.5 px-3 rounded border-0 bg-transparent outline-none transition-all duration-300 rounded text-gray-800 hover:text-gray-800 hover:bg-gray-200 focus:shadow-none"
+                            href="#">2</a
+                        >
+                    </li>
+                    <li class="page-item">
+                        <a
+                            class="page-link relative block py-1.5 px-3 rounded border-0 bg-transparent outline-none transition-all duration-300 rounded text-gray-800 hover:text-gray-800 hover:bg-gray-200 focus:shadow-none"
+                            href="#">3</a
+                        >
+                    </li>
+                    <li class="page-item">
+                        <a
+                            class="page-link relative block py-1.5 px-3 rounded border-0 bg-transparent outline-none transition-all duration-300 rounded text-gray-800 hover:text-gray-800 hover:bg-gray-200 focus:shadow-none"
+                            href="#">Next</a
+                        >
+                    </li>
+                </ul>
+            </nav>
         </div>
-    {/await}
-    <br>
-    <div class="flex justify-center">
-        <nav aria-label="Page navigation example">
-          <ul class="flex list-style-none">
-            <li class="page-item"><a
-                class="page-link relative block py-1.5 px-3 rounded border-0 bg-transparent outline-none transition-all duration-300 rounded text-gray-800 hover:text-gray-800 focus:shadow-none"
-                href="#">Previous</a></li>
-            <li class="page-item"><a
-                class="page-link relative block py-1.5 px-3 rounded border-0 bg-transparent outline-none transition-all duration-300 rounded text-gray-800 hover:text-gray-800 hover:bg-gray-200 focus:shadow-none"
-                href="#">1</a></li>
-            <li class="page-item"><a
-                class="page-link relative block py-1.5 px-3 rounded border-0 bg-transparent outline-none transition-all duration-300 rounded text-gray-800 hover:text-gray-800 hover:bg-gray-200 focus:shadow-none"
-                href="#">2</a></li>
-            <li class="page-item"><a
-                class="page-link relative block py-1.5 px-3 rounded border-0 bg-transparent outline-none transition-all duration-300 rounded text-gray-800 hover:text-gray-800 hover:bg-gray-200 focus:shadow-none"
-                href="#">3</a></li>
-            <li class="page-item"><a
-                class="page-link relative block py-1.5 px-3 rounded border-0 bg-transparent outline-none transition-all duration-300 rounded text-gray-800 hover:text-gray-800 hover:bg-gray-200 focus:shadow-none"
-                href="#">Next</a></li>
-          </ul>
-        </nav>
-      </div>
+    {/if}
 </main>
 
 <style>

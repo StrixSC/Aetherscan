@@ -3,6 +3,7 @@
     import type { EthersProvider } from "src/cosmos";
     import { db } from "../db";
     import page from "page";
+    import { extractQueryParams } from "./utils";
 
     import {
         activeAccount,
@@ -10,6 +11,8 @@
         connectedToMetamask,
         web3,
     } from "./stores";
+    import type { Unsubscriber } from "svelte/store";
+    import { onDestroy } from "svelte";
 
     web3.set(new ethers.providers.Web3Provider(window.ethereum, "any"));
 
@@ -74,11 +77,16 @@
             console.error(e);
         });
 
-    connectedToMetamask.subscribe((connected: boolean) => {
+    const unsubscribe = connectedToMetamask.subscribe((connected: boolean) => {
+        const queryParams = extractQueryParams();
+        const redirect = queryParams.redirect || "/explorer";
         if(connected) {
-            page.redirect("/explorer");
+            page.redirect(redirect);
+            
         }
     })
+
+    onDestroy(unsubscribe)
 </script>
 
 <main>
