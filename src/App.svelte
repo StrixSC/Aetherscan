@@ -1,20 +1,37 @@
 <script lang="ts">
-  import Metamask from "/src/lib/Metamask.svelte";
-  import NoMetamask from "/src/lib/NoMetamask.svelte";
-  import NoWallet from "/src/lib/NoWallet.svelte";
+  import Metamask from "./lib/Metamask.svelte";
+  import NoMetamask from "./lib/NoMetamask.svelte";
+  import NoWallet from "./lib/NoWallet.svelte";
+  import Explorer from "./lib/Explorer.svelte";
+  import router from "page";
+  import { page, params } from "./lib/stores";
 
   const hasProvider = !!window.ethereum;
   const isMetamask = hasProvider && !window.ethereum.isMetamask;
+
+  
+  router("/", () => {
+    if (hasProvider && isMetamask) {
+      $page = Metamask
+    } else if (hasProvider && !isMetamask) {
+      $page = NoMetamask
+    } else {
+      $page = NoWallet
+    }
+  });
+
+  router("/explorer", () => $page = Explorer);
+  // router("/explorer/:block", (ctx, next) => {
+  //   $params = ctx.params;
+  //   next()
+  // }, () => $page = Explorer);
+
+
+  router.start();
 </script>
 
 <main>
-  {#if hasProvider && isMetamask}
-    <Metamask />
-  {:else if hasProvider && !isMetamask}
-    <NoMetamask />
-  {:else}
-    <NoWallet />
-  {/if}
+  <svelte:component this={$page} />
 </main>
 
 <style>

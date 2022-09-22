@@ -1,9 +1,8 @@
 <script lang="ts">
     import { ethers } from "ethers";
-    import router from "page";
     import type { EthersProvider } from "src/cosmos";
-    import Explorer from "./Explorer.svelte";
     import { db } from "../db";
+    import page from "page";
 
     import {
         activeAccount,
@@ -63,10 +62,6 @@
         }
     };
 
-    let blocks = [];
-
-    
-
     ($web3.provider as EthersProvider)
         .on("accountsChanged", handleAccountEvent)
         .on("chainChanged", handleChainEvent)
@@ -78,12 +73,16 @@
         .catch((e) => {
             console.error(e);
         });
+
+    connectedToMetamask.subscribe((connected: boolean) => {
+        if(connected) {
+            page.redirect("/explorer");
+        }
+    })
 </script>
 
 <main>
-    {#if $connectedToMetamask}
-        <Explorer />
-    {:else}
+    {#if !$connectedToMetamask}
         <!-- TODO: Handle cases where the Metamask notification is already active and the user clicks on the button again -->
         <button on:click={connect}>Connect</button>
     {/if}

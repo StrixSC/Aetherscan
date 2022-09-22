@@ -6,6 +6,13 @@
     import { web3, constants, activeChain } from "./stores";
     import { db } from "../db";
     import moment from "moment";
+    import page from "page";
+    import { BigNumber } from "ethers";
+
+    if (!$activeChain) 
+    {
+        page.redirect("/");
+    }
 
     let blocks: BlockWithTransactions[];
 
@@ -35,19 +42,7 @@
 
         console.log(blocks);
 
-        await db.chains.update($activeChain, {
-            blocks: blocks.map((b: BlockWithTransactions) => {
-                return {
-                    ...b,
-                    transactions: b.transactions.map((t: TransactionResponse) => {
-                        return {
-                            ...t,
-                            wait: null,
-                        };
-                    }),
-                };
-            }),
-        });
+        await db.chains.update($activeChain, { id: $activeChain, blocks});
 
         return blocks;
     };
@@ -61,8 +56,8 @@
 
             if (startingBlock !== 0) {
                 const latestBlock = await $web3.getBlockNumber();
-                if (latestBlock == startingBlock) {
-                    return []
+                if (latestBlock < startingBlock) {
+                    return [];
                 }
             }
 
@@ -72,7 +67,15 @@
                 blocks.push(b);
             }
 
-            return blocks;
+            return blocks.map((b: BlockWithTransactions) => {
+                return {
+                    ...b,
+                    transactions: b.transactions.map((t) => {
+                        delete t.wait;
+                        return t;
+                    }),
+                };
+            });
         } catch (e) {
             console.error(e);
             return [];
@@ -159,12 +162,12 @@
                                         <td
                                             class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap"
                                         >
-                                            {block.gasUsed}
+                                            {BigNumber.from(block.gasUsed)}
                                         </td>
                                         <td
                                             class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap"
                                         >
-                                            {block.gasLimit}
+                                            {BigNumber.from(block.gasLimit)}
                                         </td>
                                     </tr>
                                 {/each}
@@ -175,6 +178,28 @@
             </div>
         </div>
     {/await}
+    <br>
+    <div class="flex justify-center">
+        <nav aria-label="Page navigation example">
+          <ul class="flex list-style-none">
+            <li class="page-item"><a
+                class="page-link relative block py-1.5 px-3 rounded border-0 bg-transparent outline-none transition-all duration-300 rounded text-gray-800 hover:text-gray-800 focus:shadow-none"
+                href="#">Previous</a></li>
+            <li class="page-item"><a
+                class="page-link relative block py-1.5 px-3 rounded border-0 bg-transparent outline-none transition-all duration-300 rounded text-gray-800 hover:text-gray-800 hover:bg-gray-200 focus:shadow-none"
+                href="#">1</a></li>
+            <li class="page-item"><a
+                class="page-link relative block py-1.5 px-3 rounded border-0 bg-transparent outline-none transition-all duration-300 rounded text-gray-800 hover:text-gray-800 hover:bg-gray-200 focus:shadow-none"
+                href="#">2</a></li>
+            <li class="page-item"><a
+                class="page-link relative block py-1.5 px-3 rounded border-0 bg-transparent outline-none transition-all duration-300 rounded text-gray-800 hover:text-gray-800 hover:bg-gray-200 focus:shadow-none"
+                href="#">3</a></li>
+            <li class="page-item"><a
+                class="page-link relative block py-1.5 px-3 rounded border-0 bg-transparent outline-none transition-all duration-300 rounded text-gray-800 hover:text-gray-800 hover:bg-gray-200 focus:shadow-none"
+                href="#">Next</a></li>
+          </ul>
+        </nav>
+      </div>
 </main>
 
 <style>
