@@ -11,7 +11,6 @@
         connectedToMetamask,
         web3,
     } from "./stores";
-    import type { Unsubscriber } from "svelte/store";
     import { onDestroy } from "svelte";
 
     web3.set(new ethers.providers.Web3Provider(window.ethereum, "any"));
@@ -85,7 +84,7 @@
             
         }
     })
-
+    
     onDestroy(unsubscribe)
 </script>
 

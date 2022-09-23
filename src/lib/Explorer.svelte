@@ -11,8 +11,11 @@
     import { extractQueryParams } from "./utils";
 
     if (!$activeChain) {
-        page.redirect(`/?redirect=${encodeURIComponent(page.current)}`);
+        page.redirect(`/?redirect=${page.current}`);
     }
+
+    let pageCount = 0;
+    let currentPage = 0;
 
     const queryParams: Record<string, any> = extractQueryParams();
     const queryStartBlock = queryParams.start;
@@ -56,6 +59,8 @@
 
             if (startingBlock !== 0) {
                 const latestBlock = await $web3.getBlockNumber();
+                pageCount = latestBlock/maxBlocks;
+                currentPage = 1;
                 if (latestBlock < startingBlock) {
                     return [];
                 }
@@ -81,6 +86,8 @@
             return [];
         }
     };
+
+    
 </script>
 
 <main>
@@ -183,31 +190,24 @@
         <div class="flex justify-center">
             <nav aria-label="Page navigation example">
                 <ul class="flex list-style-none">
-                    <li class="page-item">
+                    <li class="page-item" class:disabled="{currentPage === 1}">
                         <a
                             class="page-link relative block py-1.5 px-3 rounded border-0 bg-transparent outline-none transition-all duration-300 rounded text-gray-800 hover:text-gray-800 focus:shadow-none"
                             href="#">Previous</a
                         >
                     </li>
-                    <li class="page-item">
-                        <a
-                            class="page-link relative block py-1.5 px-3 rounded border-0 bg-transparent outline-none transition-all duration-300 rounded text-gray-800 hover:text-gray-800 hover:bg-gray-200 focus:shadow-none"
-                            href="#">1</a
-                        >
-                    </li>
-                    <li class="page-item">
-                        <a
-                            class="page-link relative block py-1.5 px-3 rounded border-0 bg-transparent outline-none transition-all duration-300 rounded text-gray-800 hover:text-gray-800 hover:bg-gray-200 focus:shadow-none"
-                            href="#">2</a
-                        >
-                    </li>
-                    <li class="page-item">
-                        <a
-                            class="page-link relative block py-1.5 px-3 rounded border-0 bg-transparent outline-none transition-all duration-300 rounded text-gray-800 hover:text-gray-800 hover:bg-gray-200 focus:shadow-none"
-                            href="#">3</a
-                        >
-                    </li>
-                    <li class="page-item">
+                    {#each Array(pageCount) as _, i}
+                        <li class="page-item" class:active="{currentPage === i}">
+                            <a class="page-link relative block py-1.5 px-3 rounded border-0 bg-transparent outline-none transition-all duration-300 rounded text-gray-800 hover:text-gray-800 hover:bg-gray-200 focus:shadow-none"
+                                href="#">
+                                {i + 1}  
+                                {#if currentPage === 1}
+                                    <span class="visually-hidden">(current)</span>
+                                {/if}
+                        </a>
+                        </li>
+                    {/each}
+                    <li class="page-item" class:disabled="{currentPage === pageCount}">
                         <a
                             class="page-link relative block py-1.5 px-3 rounded border-0 bg-transparent outline-none transition-all duration-300 rounded text-gray-800 hover:text-gray-800 hover:bg-gray-200 focus:shadow-none"
                             href="#">Next</a
@@ -219,8 +219,10 @@
     {/if}
 </main>
 
+
 <style>
     .main-bg {
         background: linear-gradient(180deg, #283e51 0%, #0a2342 100%);
     }
+    
 </style>

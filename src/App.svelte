@@ -4,7 +4,8 @@
   import NoWallet from "./lib/NoWallet.svelte";
   import Explorer from "./lib/Explorer.svelte";
   import router from "page";
-  import { page, params } from "./lib/stores";
+  import { page } from "./lib/stores";
+  import 'tw-elements';
 
   const hasProvider = !!window.ethereum;
   const isMetamask = hasProvider && !window.ethereum.isMetamask;
