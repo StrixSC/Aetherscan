@@ -5,7 +5,6 @@
   import Explorer from "./lib/Explorer.svelte";
   import router from "page";
   import { page } from "./lib/stores";
-  import 'tw-elements';
 
   const hasProvider = !!window.ethereum;
   const isMetamask = hasProvider && !window.ethereum.isMetamask;

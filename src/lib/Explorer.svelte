@@ -1,9 +1,6 @@
 <script lang="ts">
-    import type {
-        BlockWithTransactions,
-        TransactionResponse,
-    } from "@ethersproject/abstract-provider";
-    import { web3, constants, activeChain } from "./stores";
+    import type { BlockWithTransactions } from "@ethersproject/abstract-provider";
+    import { web3, activeChain } from "./stores";
     import { db } from "../db";
     import moment from "moment";
     import page from "page";
@@ -59,7 +56,7 @@
 
             if (startingBlock !== 0) {
                 const latestBlock = await $web3.getBlockNumber();
-                pageCount = latestBlock/maxBlocks;
+                pageCount = latestBlock / maxBlocks;
                 currentPage = 1;
                 if (latestBlock < startingBlock) {
                     return [];
@@ -86,8 +83,6 @@
             return [];
         }
     };
-
-    
 </script>
 
 <main>
@@ -95,134 +90,71 @@
         {#await queryBlocks()}
             Loading...
         {:then blocks}
-            <div class="flex flex-col">
-                <div class="overflow-x-auto sm:-mx-6 lg:-mx-8">
-                    <div class="py-2 inline-block min-w-full sm:px-6 lg:px-8">
-                        <div class="overflow-hidden">
-                            <table class="min-w-full">
-                                <thead class="border-b">
-                                    <tr>
-                                        <th
-                                            scope="col"
-                                            class="text-sm font-medium text-gray-900 px-6 py-4 text-left"
-                                        >
-                                            Block
-                                        </th>
-                                        <th
-                                            scope="col"
-                                            class="text-sm font-medium text-gray-900 px-6 py-4 text-left"
-                                        >
-                                            Age
-                                        </th>
-                                        <th
-                                            scope="col"
-                                            class="text-sm font-medium text-gray-900 px-6 py-4 text-left"
-                                        >
-                                            Txn
-                                        </th>
-                                        <th
-                                            scope="col"
-                                            class="text-sm font-medium text-gray-900 px-6 py-4 text-left"
-                                        >
-                                            Miner
-                                        </th>
-                                        <th
-                                            scope="col"
-                                            class="text-sm font-medium text-gray-900 px-6 py-4 text-left"
-                                        >
-                                            Gas Used
-                                        </th>
-                                        <th
-                                            scope="col"
-                                            class="text-sm font-medium text-gray-900 px-6 py-4 text-left"
-                                        >
-                                            Gas Limit
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {#each blocks as block}
-                                        <tr class="bg-white border-b">
-                                            <td
-                                                class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900"
-                                            >
-                                                {block.number}
-                                            </td>
-                                            <td
-                                                class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap"
-                                            >
-                                                {moment
-                                                    .unix(block.timestamp)
-                                                    .format(
-                                                        "MM/DD/YYYY HH:mm:SS:ss"
-                                                    )}
-                                            </td>
-                                            <td
-                                                class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap"
-                                            >
-                                                {block.transactions.length}
-                                            </td>
-                                            <td
-                                                class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap"
-                                            >
-                                                {block.miner}
-                                            </td>
-                                            <td
-                                                class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap"
-                                            >
-                                                {BigNumber.from(block.gasUsed)}
-                                            </td>
-                                            <td
-                                                class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap"
-                                            >
-                                                {BigNumber.from(block.gasLimit)}
-                                            </td>
-                                        </tr>
-                                    {/each}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
+            <div class="flex justify-center">
+                <nav>
+                    <ul class="flex list-style-none gap-2">
+                        <li>
+                            <a href="#">Previous</a>
+                        </li>
+                        {#each Array(pageCount) as _, i}
+                            <li class:font-bold={currentPage === i + 1}>
+                                <a href="#"> {i + 1} </a>
+                            </li>
+                        {/each}
+                        <li>
+                            <a href="#">Next</a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+            <div class="overflow-x-auto relative">
+                <table>
+                    <thead>
+                        <tr>
+                            <th> Block </th>
+                            <th> Age </th>
+                            <th> Txn </th>
+                            <th> Miner </th>
+                            <th> Gas Used </th>
+                            <th> Gas Limit </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {#each blocks as block}
+                            <tr>
+                                <th>
+                                    {block.number}
+                                </th>
+                                <td>
+                                    {moment
+                                        .unix(block.timestamp)
+                                        .format("MM/DD/YYYY HH:mm:SS:ss")}
+                                </td>
+                                <td>
+                                    {block.transactions.length}
+                                </td>
+                                <td>
+                                    {block.miner}
+                                </td>
+                                <td>
+                                    {BigNumber.from(block.gasUsed)}
+                                </td>
+                                <td>
+                                    {BigNumber.from(block.gasLimit)}
+                                </td>
+                            </tr>
+                        {/each}
+                    </tbody>
+                </table>
             </div>
         {/await}
         <br />
-        <div class="flex justify-center">
-            <nav aria-label="Page navigation example">
-                <ul class="flex list-style-none">
-                    <li class="page-item" class:disabled="{currentPage === 1}">
-                        <a
-                            class="page-link relative block py-1.5 px-3 rounded border-0 bg-transparent outline-none transition-all duration-300 rounded text-gray-800 hover:text-gray-800 focus:shadow-none"
-                            href="#">Previous</a
-                        >
-                    </li>
-                    {#each Array(pageCount) as _, i}
-                        <li class="page-item" class:active="{currentPage === i}">
-                            <a class="page-link relative block py-1.5 px-3 rounded border-0 bg-transparent outline-none transition-all duration-300 rounded text-gray-800 hover:text-gray-800 hover:bg-gray-200 focus:shadow-none"
-                                href="#">
-                                {i + 1}  
-                                {#if currentPage === 1}
-                                    <span class="visually-hidden">(current)</span>
-                                {/if}
-                        </a>
-                        </li>
-                    {/each}
-                    <li class="page-item" class:disabled="{currentPage === pageCount}">
-                        <a
-                            class="page-link relative block py-1.5 px-3 rounded border-0 bg-transparent outline-none transition-all duration-300 rounded text-gray-800 hover:text-gray-800 hover:bg-gray-200 focus:shadow-none"
-                            href="#">Next</a
-                        >
-                    </li>
-                </ul>
-            </nav>
-        </div>
+
     {/if}
 </main>
-
 
 <style>
     .main-bg {
         background: linear-gradient(180deg, #283e51 0%, #0a2342 100%);
     }
-    
 </style>
