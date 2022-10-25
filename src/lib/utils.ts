@@ -3,3 +3,8 @@ export const extractQueryParams = (): Record<string, any> => {
         get: (searchParams, prop: any) => searchParams.get(prop),
     });
 };
+
+// Taken directly from https://github.com/processing/p5.js/blob/main/src/math/calculation.js
+export const constrain = (n:number , low: number, high: number): number => {
+    return Math.max(Math.min(n, high), low);
+}
