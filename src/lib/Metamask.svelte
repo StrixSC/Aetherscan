@@ -18,7 +18,6 @@
     const signer = $web3.getSigner();
 
     export const handleAccountEvent = async (accounts: string[]) => {
-        console.log("Handling account event");
         if (!accounts.length) {
             connectedToMetamask.set(false);
             activeAccount.set(null);

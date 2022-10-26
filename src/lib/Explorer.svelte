@@ -1,93 +1,170 @@
 <script lang="ts">
-    import type { BlockWithTransactions } from "@ethersproject/abstract-provider";
-    import { web3, activeChain } from "./stores";
-    import { db } from "../db";
-    import moment from "moment";
-    import page from "page";
-    import { BigNumber } from "ethers";
-    import { extractQueryParams } from "./utils";
+    import type { BlockWithTransactions } from '@ethersproject/abstract-provider'
+    import { web3, activeChain } from './stores'
+    import { db, type Chain } from '../db'
+    import moment from 'moment'
+    import page from 'page'
+    import { BigNumber } from 'ethers'
+    import { extractQueryParams, mergeBlocks } from './utils'
 
     if (!$activeChain) {
         page.redirect(`/?redirect=${encodeURIComponent(page.current)}`)
     }
 
-    let pageCount = 0;
-    let currentPage = 0;
+    export const getLatestBlock = async () => {
+        try {
+            const latestBlockInBlockChain = await $web3.getBlockNumber();
+            return latestBlockInBlockChain;
+        } catch (e) {
+            console.error(e)
+            return 0;
+        }
+    }
 
-    const queryParams: Record<string, any> = extractQueryParams();
-    const queryStartBlock = queryParams.start;
+    let pageCount = 1
+    let currentPage = 0
 
-    let blocks: BlockWithTransactions[];
+    // TODO: ADD FILTERS TO MAKE SURE THAT PEOPLE DONT GO OVER THE LIMITS.
+    const queryParams: Record<string, any> = extractQueryParams()
+    const queryStartBlock = parseInt(queryParams.start, 10) || 0
+    const queryLimit = parseInt(queryParams.limit, 10) || 50
 
-    const queryBlocks = async () => {
-        let blocks = [];
-        const chainData = await db.chains.where({ id: $activeChain }).first();
+    let blocks: BlockWithTransactions[] = []
+
+    const saveBlocksToCache = async (
+        chainData: Chain,
+        blocks: BlockWithTransactions[],
+        startIndex: number = -1,
+        limit?: number
+    ) => {
+        blocks = blocks.map((b: BlockWithTransactions) => {
+            return {
+                ...b,
+                transactions: b.transactions.map((t) => {
+                    if (t.wait) {
+                        delete t.wait
+                    }
+                    return t
+                }),
+            }
+        })
 
         try {
-            if (chainData.blocks.length > 0) {
-                blocks = chainData.blocks;
-                let newBlocks = [];
-                const previouslyFetchedBlockLength =
-                    chainData.blocks.length - 1;
-                const lastFetchedBlock =
-                    chainData.blocks[previouslyFetchedBlockLength].number;
-                newBlocks = await queryBlocksFromBlockchain(
-                    lastFetchedBlock + 1
-                );
-                blocks = blocks.concat(newBlocks);
-            } else {
-                blocks = await queryBlocksFromBlockchain();
+            if (startIndex !== -1) {
+                blocks = mergeBlocks(chainData.blocks, blocks)
             }
+
+            const sortedBlocks = blocks.sort((b1, b2) => {
+                return b1.number - b2.number
+            })
+
+            await db.chains.update($activeChain, { blocks: sortedBlocks })
         } catch (e) {
-            blocks = [];
-            console.error(e);
+            console.error(e)
+        }
+        console.log(JSON.stringify(blocks));
+        return blocks
+    }
+
+    const qBlocks = async (
+        start = queryStartBlock,
+        limit = queryLimit
+    ): Promise<BlockWithTransactions[]> => {
+        let blocks = []
+        const chainData = await db.chains.where({ id: $activeChain }).first()
+        const startIndex = chainData
+            ? chainData.blocks.findIndex((b) => b.number === start)
+            : -1
+
+        const latestBlockInBlockchain = await getLatestBlock();
+        if (latestBlockInBlockchain < start + limit) {
+            limit = latestBlockInBlockchain - start;
         }
 
-        await db.chains.update($activeChain, { id: $activeChain, blocks });
-        return blocks;
-    };
+        if (!chainData || chainData.blocks.length === 0 || startIndex === -1) {
+            blocks = await queryBlocksFromBlockchain(start, limit)
+        } else {
+            const lastBlockInCache =
+                chainData.blocks[chainData.blocks.length - 1].number
+            
+            if (start > lastBlockInCache) {
+                blocks = await queryBlocksFromBlockchain(start, limit)
+            } else if (start + limit <= lastBlockInCache) {
+                const startingIndex = chainData.blocks.findIndex(
+                    (b) => b.number === start
+                )
+                blocks = chainData.blocks.splice(
+                    startingIndex,
+                    startingIndex + limit + 1
+                )
+                return blocks
+            } else {
+                blocks = chainData.blocks.splice(start, lastBlockInCache)
+                console.log(
+                    'Fetching from ',
+                    lastBlockInCache,
+                    'this many blocks:',
+                    limit - (lastBlockInCache - start)
+                )
+                const newBlocks = await queryBlocksFromBlockchain(
+                    lastBlockInCache + 1,
+                    limit - (lastBlockInCache - start)
+                )
+                blocks = blocks.concat(newBlocks)
+            }
+        }
+
+        return saveBlocksToCache(chainData, blocks, startIndex, limit)
+    }
 
     const queryBlocksFromBlockchain = async (
-        startingBlock = queryStartBlock || 0,
-        maxBlocks = 50
+        startingBlock = queryStartBlock,
+        maxBlocks = queryLimit,
+        blockNumberList: number[] = []
     ): Promise<BlockWithTransactions[]> => {
         try {
-            const blocks = [];
+            let blocks = []
+
+            if (blockNumberList.length != 0) {
+                for (const blockNum of blockNumberList) {
+                    const b: BlockWithTransactions =
+                        await $web3.getBlockWithTransactions(blockNum)
+                    if (b) {
+                        blocks.push(b)
+                    }
+                }
+
+                return blocks
+            }
 
             if (startingBlock !== 0) {
-                const latestBlock = await $web3.getBlockNumber();
-                pageCount = latestBlock / maxBlocks;
-                currentPage = 1;
+                const latestBlock = await $web3.getBlockNumber()
+                pageCount = latestBlock / maxBlocks
+                currentPage = 1
                 if (latestBlock < startingBlock) {
-                    return [];
+                    return []
                 }
             }
 
-            for (let i = startingBlock; i < maxBlocks; i++) {
+            for (let i = startingBlock; i <= startingBlock + maxBlocks; i++) {
                 const b: BlockWithTransactions =
-                    await $web3.getBlockWithTransactions(i);
-                blocks.push(b);
+                    await $web3.getBlockWithTransactions(i)
+                if (b) {
+                    blocks.push(b)
+                }
             }
 
-            return blocks.map((b: BlockWithTransactions) => {
-                return {
-                    ...b,
-                    transactions: b.transactions.map((t) => {
-                        delete t.wait;
-                        return t;
-                    }),
-                };
-            });
+            return blocks
         } catch (e) {
-            console.error(e);
-            return [];
+            console.error(e)
+            return []
         }
-    };
+    }
 </script>
 
 <main>
     {#if $activeChain}
-        {#await queryBlocks()}
+        {#await qBlocks()}
             Loading...
         {:then blocks}
             <div class="flex justify-center">
@@ -96,11 +173,6 @@
                         <li>
                             <a href="#">Previous</a>
                         </li>
-                        {#each Array(pageCount) as _, i}
-                            <li class:font-bold={currentPage === i + 1}>
-                                <a href="#"> {i + 1} </a>
-                            </li>
-                        {/each}
                         <li>
                             <a href="#">Next</a>
                         </li>
@@ -128,7 +200,7 @@
                                 <td>
                                     {moment
                                         .unix(block.timestamp)
-                                        .format("MM/DD/YYYY HH:mm:SS:ss")}
+                                        .format('MM/DD/YYYY HH:mm:SS:ss')}
                                 </td>
                                 <td>
                                     {block.transactions.length}
@@ -149,7 +221,6 @@
             </div>
         {/await}
         <br />
-
     {/if}
 </main>
 
