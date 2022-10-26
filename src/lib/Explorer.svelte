@@ -9,6 +9,7 @@
 
     if (!$activeChain) {
         page.redirect(`/?redirect=${page.current}`);
+        page.redirect(`/?redirect=${encodeURIComponent(page.current)}`)
     }
 
     let pageCount = 0;

@@ -4,7 +4,8 @@
   import NoWallet from "./lib/NoWallet.svelte";
   import Explorer from "./lib/Explorer.svelte";
   import router from "page";
-  import { page } from "./lib/stores";
+  import { page, queryParams } from "./lib/stores";
+    import { extractQueryParams } from "./lib/utils"
 
   const hasProvider = !!window.ethereum;
   const isMetamask = hasProvider && !window.ethereum.isMetamask;
@@ -21,12 +22,6 @@
   });
 
   router("/explorer", () => $page = Explorer);
-  // router("/explorer/:block", (ctx, next) => {
-  //   $params = ctx.params;
-  //   next()
-  // }, () => $page = Explorer);
-
-
   router.start();
 </script>
 

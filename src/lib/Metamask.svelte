@@ -31,7 +31,7 @@
         }
 
         const chainId = await signer.getChainId();
-        
+
         const dbExists = !!(await db.chains.get(chainId))
         if (!dbExists) {
             db.chains.add({
@@ -80,8 +80,7 @@
         const queryParams = extractQueryParams();
         const redirect = queryParams.redirect || "/explorer";
         if(connected) {
-            page.redirect(redirect);
-            
+            page.redirect(decodeURIComponent(redirect));
         }
     })
     
