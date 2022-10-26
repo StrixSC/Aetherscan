@@ -18,7 +18,6 @@
     const signer = $web3.getSigner();
 
     export const handleAccountEvent = async (accounts: string[]) => {
-        console.log("Handling account event");
         if (!accounts.length) {
             connectedToMetamask.set(false);
             activeAccount.set(null);
@@ -31,7 +30,7 @@
         }
 
         const chainId = await signer.getChainId();
-        
+
         const dbExists = !!(await db.chains.get(chainId))
         if (!dbExists) {
             db.chains.add({
@@ -80,8 +79,7 @@
         const queryParams = extractQueryParams();
         const redirect = queryParams.redirect || "/explorer";
         if(connected) {
-            page.redirect(redirect);
-            
+            page.redirect(decodeURIComponent(redirect));
         }
     })
     
