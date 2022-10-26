@@ -8,7 +8,6 @@
     import { extractQueryParams } from "./utils";
 
     if (!$activeChain) {
-        page.redirect(`/?redirect=${page.current}`);
         page.redirect(`/?redirect=${encodeURIComponent(page.current)}`)
     }
 
