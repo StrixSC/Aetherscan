@@ -35,7 +35,6 @@
         chainData: Chain,
         blocks: BlockWithTransactions[],
         startIndex: number = -1,
-        limit?: number
     ) => {
         blocks = blocks.map((b: BlockWithTransactions) => {
             return {
@@ -62,8 +61,8 @@
         } catch (e) {
             console.error(e)
         }
-        console.log(JSON.stringify(blocks));
-        return blocks
+        
+        return blocks.splice(queryStartBlock, queryLimit + 1);
     }
 
     const qBlocks = async (
@@ -82,7 +81,7 @@
         }
 
         if (!chainData || chainData.blocks.length === 0 || startIndex === -1) {
-            blocks = await queryBlocksFromBlockchain(start, limit)
+            blocks = await queryBlocksFromBlockchain(start, limit);
         } else {
             const lastBlockInCache =
                 chainData.blocks[chainData.blocks.length - 1].number
@@ -114,7 +113,7 @@
             }
         }
 
-        return saveBlocksToCache(chainData, blocks, startIndex, limit)
+        return saveBlocksToCache(chainData, blocks, startIndex)
     }
 
     const queryBlocksFromBlockchain = async (
