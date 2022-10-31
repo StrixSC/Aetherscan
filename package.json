@@ -37,10 +37,10 @@
     "vite": "^3.0.7"
   },
   "dependencies": {
+    "@fortawesome/fontawesome-free": "^6.2.0",
     "@metamask/providers": "^9.1.0",
     "dexie": "^3.2.2",
     "moment": "^2.29.4",
-    "page": "^1.11.6",
-    "rxdb": "^12.7.16"
+    "page": "^1.11.6"
   }
 }
