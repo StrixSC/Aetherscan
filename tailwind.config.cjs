@@ -2,8 +2,10 @@
 module.exports = {
   content: ['./src/**/*.{html,js,svelte,ts}'],
   theme: {
-    extend: {}
-  },
-  darkMode: 'class',
-  plugins: []
-};
+    fontFamily: {
+      sans: [ "Inter", "sans-serif"],
+    },
+    darkMode: 'class',
+    plugins: []
+  }
+}

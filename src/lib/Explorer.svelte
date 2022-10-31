@@ -1,11 +1,13 @@
 <script lang="ts">
-    import type { BlockWithTransactions } from '@ethersproject/abstract-provider'
-    import { web3, activeChain } from './stores'
-    import { db, type Chain } from '../db'
-    import moment from 'moment'
-    import page from 'page'
-    import { BigNumber } from 'ethers'
-    import { extractQueryParams, mergeBlocks } from './utils'
+    import LeftNavbar from './LeftNavbar.svelte';
+
+    import type { BlockWithTransactions } from '@ethersproject/abstract-provider';
+    import { web3, activeChain } from './stores';
+    import { db, type Chain } from '../db';
+    import moment from 'moment';
+    import page from 'page';
+    import { BigNumber } from 'ethers';
+    import { extractQueryParams, mergeBlocks } from './utils';
 
     if (!$activeChain) {
         page.redirect(`/?redirect=${encodeURIComponent(page.current)}`)
@@ -162,6 +164,7 @@
 </script>
 
 <main>
+    <LeftNavbar></LeftNavbar>
     {#if $activeChain}
         {#await qBlocks()}
             Loading...
@@ -179,7 +182,8 @@
                 </nav>
             </div>
             <div class="overflow-x-auto relative">
-                <table>
+                <table class="flex flex-col gap-1">
+                    <caption class="flex justify-start font-inter">Blocks</caption>
                     <thead>
                         <tr>
                             <th> Block </th>
