@@ -1,4 +1,4 @@
-# Cosmos
+# Aetherscan
 
 ## Ethereum Blockchain Explorer
 
