@@ -1,5 +1,5 @@
 # Aetherscan
-<img width="15%" min-width="100" src="https://www.strix.site/assets/cosmos.svg" align="right"> 
+<img width="15%" src="https://www.strix.site/assets/cosmos.svg" align="right"> 
 ## Ethereum Blockchain Explorer
 
 For those times when you dont feel like having to install a snap version of geth to query a private network...
