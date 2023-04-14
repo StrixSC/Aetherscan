@@ -2,8 +2,6 @@
     import { ethers } from "ethers";
     import type { EthersProvider } from "src/cosmos";
     import { db } from "../db";
-    import page from "page";
-    import { extractQueryParams } from "./utils";
 
     import {
         activeAccount,
@@ -11,7 +9,6 @@
         connectedToMetamask,
         web3,
     } from "./stores";
-    import { onDestroy } from "svelte";
 
     web3.set(new ethers.providers.Web3Provider(window.ethereum, "any"));
 
@@ -74,16 +71,6 @@
         .catch((e) => {
             console.error(e);
         });
-
-    const unsubscribe = connectedToMetamask.subscribe((connected: boolean) => {
-        const queryParams = extractQueryParams();
-        const redirect = queryParams.redirect || "/explorer";
-        if(connected) {
-            page.redirect(decodeURIComponent(redirect));
-        }
-    })
-    
-    onDestroy(unsubscribe)
 </script>
 
 <main>
