@@ -1,8 +1,8 @@
 import type { BlockWithTransactions } from '@ethersproject/abstract-provider'
 import { web3 } from "./stores";
 
-export const extractQueryParams = (): Record<string, any> => {
-    return new Proxy(new URLSearchParams(window.location.search), {
+export const extractQueryParams = (params: string): Record<string, any> => {
+    return new Proxy(new URLSearchParams(params), {
         get: (searchParams, prop: any) => searchParams.get(prop),
     });
 };

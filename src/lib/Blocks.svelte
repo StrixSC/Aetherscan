@@ -3,7 +3,7 @@
     import { web3, activeChain } from './stores'
     import { db, type Chain } from '../db'
     import moment from 'moment'
-    import { push, pop, replace, location } from "svelte-spa-router";
+    import { push, pop, replace, location, link } from "svelte-spa-router";
     import { BigNumber } from 'ethers'
     import { extractQueryParams, mergeBlocks } from './utils'
     import LeftNavbar from './LeftNavbar.svelte'
@@ -26,11 +26,8 @@
     let currentPage = 0
 
     // TODO: ADD FILTERS TO MAKE SURE THAT PEOPLE DONT GO OVER THE LIMITS.
-    const queryParams: Record<string, any> = extractQueryParams()
-    const queryStartBlock = parseInt(queryParams.start, 10) || 0
-    const queryLimit = parseInt(queryParams.limit, 10) || 50
-
-    let blocks: BlockWithTransactions[] = []
+    const queryStartBlock =  0;
+    const queryLimit =  50;
 
     const saveBlocksToCache = async (
         chainData: Chain,
@@ -270,7 +267,7 @@
                                 >
                                 <td
                                     class="text-center p-2 whitespace-nowrap underline hover:cursor-pointer"
-                                    >View</td
+                                    ><a href="/explorer/blocks/{block.hash}" use:link>View</a></td
                                 >
                             </tr>
                         {/each}
