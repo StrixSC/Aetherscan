@@ -1,4 +1,6 @@
-# Cosmos
+# Aetherscan
+
+<img width="15%" src="https://www.strix.site/assets/cosmos.svg" align="right"> 
 
 ## Ethereum Blockchain Explorer
 
